@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 class Item < ActiveRecord::Base
   scope :recent, where(['items.created_at >= ?', Time.zone.now.months_ago(1)])
-  has_one :exemplify
+  has_one :exemplify, :dependent => :destroy
   has_one :manifestation, :through => :exemplify
 
   #validates :item_identifier, :allow_blank => true, :uniqueness => true, :format => {:with => /\A[0-9A-Za-z_]+\Z/}

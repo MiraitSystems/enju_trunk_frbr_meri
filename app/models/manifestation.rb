@@ -13,9 +13,9 @@ class Manifestation < ActiveRecord::Base
   belongs_to :manifestation_relationship_type
 
   validates_presence_of :original_title
-  if SystemConfiguration.get("manifestation.isbn_unique")
-    validates :isbn, :uniqueness => true, :allow_blank => true, :unless => proc{|manifestation| manifestation.series_statement}
-  end
+  validates :isbn, :uniqueness => true, :allow_blank => true, 
+    :unless => proc{|manifestation| manifestation.series_statement},
+    :if => proc{ SystemConfiguration.get("manifestation.isbn_unique") }
   validates :nbn, :uniqueness => true, :allow_blank => true
   validates :identifier, :uniqueness => true, :allow_blank => true
   validates :access_address, :url => true, :allow_blank => true, :length => {:maximum => 255}

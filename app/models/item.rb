@@ -8,14 +8,30 @@ class Item < ActiveRecord::Base
   #validates :item_identifier, :allow_blank => false, :uniqueness => true, :format => {:with => /^[a-zA-Z]{1,4}-\d{5}-\d{3}/}
   validates :item_identifier, :allow_blank => false, :uniqueness => true, :format => {:with => /^[a-zA-Z]{1}[a-zA-Z0-9.]{0,4}-\d{5}(-\d{3}){0,1}$/}
   validates :url, :url => true, :allow_blank => true, :length => {:maximum => 255}
+  validate :check_acquired_at_string
   validates_date :acquired_at, :allow_blank => true
 
   normalize_attributes :item_identifier
 
+  before_save :set_acquired_at
   attr_accessor :library_id, :manifestation_id, :use_restriction_id
 
   def title
     manifestation.try(:original_title)
+  end
+
+  def check_acquired_at_string
+    return if self.acquired_at_string.blank?
+    if self.acquired_at_string =~ /^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[12]\d|3[01])$|^\d{4}-(0?[1-9]|1[0-2])$|^\d{4}$/
+      dates = self.acquired_at_string.split('-')
+      return if dates.size < 3
+      date = Time.zone.parse(self.acquired_at_string) rescue nil
+      if date
+        mm = dates[1].match(/^[1-9]$/) ? "0#{dates[1]}" : dates[1]
+        return if date.strftime("%m") == mm
+      end
+    end
+    errors.add(:acquired_at_string)
   end
 
   def select_acquired_at
@@ -24,6 +40,26 @@ class Item < ActiveRecord::Base
     else
       return Time.now.strftime("%Y%m")
     end
+  end
+
+  def set_acquired_at
+    return if acquired_at_string.blank?
+    begin
+      date = Time.zone.parse("#{acquired_at_string}")
+    rescue ArgumentError
+      begin
+        date = Time.zone.parse("#{acquired_at_string}-01")
+        date = date.end_of_month
+      rescue ArgumentError
+        begin
+          date = Time.zone.parse("#{acquired_at_string}-12-01")
+          date = date.end_of_month
+        rescue ArgumentError
+          nil
+        end
+      end
+    end
+    self.acquired_at = date
   end
 
   private

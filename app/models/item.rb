@@ -22,14 +22,23 @@ class Item < ActiveRecord::Base
 
   def check_acquired_at_string
     return if self.acquired_at_string.blank?
-    if self.acquired_at_string =~ /^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[12]\d|3[01])$|^\d{4}-(0?[1-9]|1[0-2])$|^\d{4}$/
-      dates = self.acquired_at_string.split('-')
-      return if dates.size < 3
+    case self.acquired_at_string
+    when /^\d{4}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01]$)|^\d{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[12]\d|3[01])$/
+      dates = self.acquired_at_string =~ /^\d{8}$/ ? ["#{self.acquired_at_string[0..3]}", "#{self.acquired_at_string[4..5]}", "#{self.acquired_at_string[6..7]}"] : self.acquired_at_string.split('-')
       date = Time.zone.parse(self.acquired_at_string) rescue nil
       if date
-        mm = dates[1].match(/^[1-9]$/) ? "0#{dates[1]}" : dates[1]
-        return if date.strftime("%m") == mm
+        dates[1] = "0#{dates[1]}" if dates[1].match(/^[1-9]$/)
+        dates[2] = "0#{dates[2]}" if dates[2].match(/^[1-9]$/)
+        if date.strftime("%m") == dates[1]
+          self.acquired_at_string = dates.join('-'); return
+        end
       end
+    when /^\d{4}-(0?[1-9]|1[0-2])$/
+      dates = self.acquired_at_string.split('-')
+      dates[1] = "0#{dates[1]}" if dates[1].match(/^[1-9]$/)
+      self.acquired_at_string = dates.join('-'); return
+    when /^\d{4}$/
+      return
     end
     errors.add(:acquired_at_string)
   end

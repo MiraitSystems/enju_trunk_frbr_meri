@@ -179,12 +179,12 @@ class Manifestation < ActiveRecord::Base
   end
 
   def set_new_serial_number
-    self.serial_number = self.serial_number_string.match(/\D/) ? nil : self.serial_number_string.to_i
+    self.serial_number = self.serial_number_string.tr('０-９','0-9').match(/\D/) ? nil : self.serial_number_string.tr('０-９','0-9').to_i
   end
 
   def set_volume_issue_number
-    self.volume_number = self.volume_number_string.match(/\D/) ? nil : self.volume_number_string.to_i
-    self.issue_number  = self.issue_number_string.match(/\D/)  ? nil : self.issue_number_string.to_i
+    self.volume_number = self.volume_number_string.tr('０-９','0-9').match(/\D/) ? nil : self.volume_number_string.tr('０-９','0-9').to_i
+    self.issue_number  = self.issue_number_string.tr('０-９','0-9').match(/\D/)  ? nil : self.issue_number_string.tr('０-９','0-9').to_i
     #if self.volume_number && self.volume_number.to_s.length > 9
     #  self.volume_number = nil
     #end

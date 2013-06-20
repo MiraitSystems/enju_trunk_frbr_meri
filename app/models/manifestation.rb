@@ -179,12 +179,25 @@ class Manifestation < ActiveRecord::Base
   end
 
   def set_new_serial_number
-    self.serial_number = self.serial_number_string.tr('０-９','0-9').match(/\D/) ? nil : self.serial_number_string.tr('０-９','0-9').to_i
+    if self.serial_number_string.blank? or self.serial_number_string.tr('０-９','0-9').match(/\D/)
+      self.serial_number = nil
+    else
+      self.serial_number = self.serial_number_string.tr('０-９','0-9').to_i
+    end
   end
 
   def set_volume_issue_number
-    self.volume_number = self.volume_number_string.tr('０-９','0-9').match(/\D/) ? nil : self.volume_number_string.tr('０-９','0-9').to_i
-    self.issue_number  = self.issue_number_string.tr('０-９','0-9').match(/\D/)  ? nil : self.issue_number_string.tr('０-９','0-9').to_i
+    if self.volume_number_string.blank? or self.volume_number_string.tr('０-９','0-9').match(/\D/)
+      self.volume_number = nil
+    else
+      self.volume_number = self.volume_number_string.tr('０-９','0-9').to_i
+    end
+
+    if self.issue_number_string.blank? or self.issue_number_string.tr('０-９','0-9').match(/\D/)
+      self.issue_number = nil
+    else
+      self.issue_number = self.issue_number_string.tr('０-９','0-9').to_i
+    end
     #if self.volume_number && self.volume_number.to_s.length > 9
     #  self.volume_number = nil
     #end

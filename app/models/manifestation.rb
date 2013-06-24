@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 class Manifestation < ActiveRecord::Base
   scope :periodical_master, where(:periodical_master => true)
   scope :periodical_children, where(:periodical_master => false)

@@ -6,7 +6,7 @@ class Item < ActiveRecord::Base
 
   #validates :item_identifier, :allow_blank => true, :uniqueness => true, :format => {:with => /\A[0-9A-Za-z_]+\Z/}
   #validates :item_identifier, :allow_blank => false, :uniqueness => true, :format => {:with => /^[a-zA-Z]{1,4}-\d{5}-\d{3}/}
-  validates :item_identifier, :allow_blank => false, :uniqueness => true, :format => {:with => /^[a-zA-Z]{1}[a-zA-Z0-9.]{0,4}-\d{5}(-\d{3}){0,1}$/}
+  validates :item_identifier, :allow_blank => false, :uniqueness => true, :format => {:with => /^[a-zA-Z]{1}[a-zA-Z0-9\.]{0,5}-\d{5}(-\d{3}){0,1}$/}
   validates :url, :url => true, :allow_blank => true, :length => {:maximum => 255}
   validates_date :acquired_at, :allow_blank => true
 

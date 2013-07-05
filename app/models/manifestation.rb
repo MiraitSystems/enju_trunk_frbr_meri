@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 class Manifestation < ActiveRecord::Base
   scope :periodical_master, where(:periodical_master => true)
   scope :periodical_children, where(:periodical_master => false)
@@ -13,7 +14,9 @@ class Manifestation < ActiveRecord::Base
   belongs_to :manifestation_relationship_type
 
   validates_presence_of :original_title
-  validates :isbn, :uniqueness => true, :allow_blank => true, :unless => proc{|manifestation| manifestation.series_statement}
+  validates :isbn, :uniqueness => true, :allow_blank => true, 
+    :unless => proc{|manifestation| manifestation.series_statement},
+    :if => proc{ SystemConfiguration.get("manifestation.isbn_unique") }
   validates :nbn, :uniqueness => true, :allow_blank => true
   validates :identifier, :uniqueness => true, :allow_blank => true
   validates :access_address, :url => true, :allow_blank => true, :length => {:maximum => 255}
@@ -177,16 +180,28 @@ class Manifestation < ActiveRecord::Base
   end
 
   def set_new_serial_number
-    self.serial_number = self.serial_number_string.gsub(/\D/, "").to_i if self.serial_number_string rescue nil
+    if self.serial_number_string.blank? or self.serial_number_string.tr('０-９','0-9').match(/\D/)
+      self.serial_number = nil
+    else
+      self.serial_number = self.serial_number_string.tr('０-９','0-9').to_i
+    end
   end
 
   def set_volume_issue_number
-    self.volume_number = (self.volume_number_string.gsub(/\D/, "")).to_i if self.volume_number_string rescue nil
-    self.issue_number = self.issue_number_string.gsub(/\D/, "").to_i if self.issue_number_string rescue nil     
-
-    if self.volume_number && self.volume_number.to_s.length > 9
+    if self.volume_number_string.blank? or self.volume_number_string.tr('０-９','0-9').match(/\D/)
       self.volume_number = nil
+    else
+      self.volume_number = self.volume_number_string.tr('０-９','0-9').to_i
     end
+
+    if self.issue_number_string.blank? or self.issue_number_string.tr('０-９','0-9').match(/\D/)
+      self.issue_number = nil
+    else
+      self.issue_number = self.issue_number_string.tr('０-９','0-9').to_i
+    end
+    #if self.volume_number && self.volume_number.to_s.length > 9
+    #  self.volume_number = nil
+    #end
   end
 
   def title
